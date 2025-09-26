@@ -51,7 +51,50 @@ Environment: Windows 10 (Node v20.19.4)
 - Start command in use:
   - `node node_modules\next\dist\bin\next dev -p 3000`
 
+## PostgreSQL Database Migration (2025-01-27)
+- Issue: JSON storage system not suitable for production deployment in Coolify.
+- Resolution: Migrated to PostgreSQL database with Drizzle ORM.
+- Changes made:
+  - Added PostgreSQL dependencies: `pg`, `drizzle-orm`, `drizzle-kit`, `@types/pg`
+  - Created database schema in `lib/db/schema.ts` with all required tables
+  - Implemented database connection in `lib/db/connection.ts`
+  - Created new storage layer in `lib/db/storage.ts` replacing JSON storage
+  - Added migration scripts: `scripts/migrate.js`, `scripts/seed.js`
+  - Created Drizzle configuration: `drizzle.config.ts`
+  - Updated package.json with database scripts: `db:generate`, `db:migrate`, `db:seed`, `db:setup`
+  - Modified `lib/storage.tsx` to import new database storage
+  - Created deployment guide: `DEPLOYMENT.md`
+  - Added environment configuration: `env.example`
+
+- Database schema includes:
+  - `users` - User accounts and profiles
+  - `departments` - Organizational departments  
+  - `categories` - Document categories
+  - `roles` - User roles and permissions
+  - `permissions` - System permissions
+  - `eons` - Documents (eONs)
+  - `eon_approvers` - Document approval workflow
+  - `eon_viewers` - Document viewing permissions
+  - `eon_comments` - Document comments and discussions
+  - `eon_attachments` - Document attachments
+  - `audit_logs` - System audit trail
+
+- Coolify deployment configuration:
+  - Build command: `npm run build`
+  - Start command: `npm start`
+  - Port: `3000`
+  - Environment variables: `DATABASE_URL`, `NODE_ENV`, `PORT`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`
+  - Post-deployment: `npm run db:setup` (runs migrations and seeds data)
+
+- Default users after seeding:
+  - Admin: `admin@eon.com` (Administrator role)
+  - Users: `john.doe@eon.com`, `jane.smith@eon.com`, `bob.wilson@eon.com`
+  - Default password: `password123` (change in production)
+
 ## Recommendations
 - Prefer the local binary or `npm run dev` (after ensuring local Next is installed) over `npx next dev` to avoid version drift.
 - If port 3000 is busy: use `-p 3001` (or free the port).
 - If `.next` gets locked on Windows: close other dev servers, delete `.next`, and retry.
+- For production deployment: ensure PostgreSQL database is set up in Coolify before deployment.
+- After first deployment: run `npm run db:setup` to initialize database schema and seed data.
+- Change default passwords in production environment.

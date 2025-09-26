@@ -1,4 +1,5 @@
-// JSON-based storage system for eON application
+// Database-based storage system for eON application
+// This file is kept for backward compatibility - actual implementation is in lib/db/storage.ts
 export interface User {
   id: string
   email: string
@@ -547,7 +548,8 @@ class JSONStorage {
   }
 }
 
-export const storage = new JSONStorage()
+// Import the new database storage
+export { storage } from './db/storage'
 
 if (typeof window !== "undefined") {
   // Use setTimeout to ensure DOM is ready
