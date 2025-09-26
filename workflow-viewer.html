@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eON Workflow Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        .diagram {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+
+        .mermaid {
+            text-align: center;
+        }
+
+        .description {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007acc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>eON Document Management System - Workflow Diagrams</h1>
+
+        <div class="description">
+            <strong>Overview:</strong> This document contains visual workflow diagrams for the eON document management
+            system, showing the complete process from user authentication through document approval and archiving.
+        </div>
+
+        <h2>1. Main Application Workflow</h2>
+        <div class="diagram">
+            <div class="mermaid">
+                graph TD
+                A[User Login] --> B{Authentication}
+                B -->|Success| C[Dashboard]
+                B -->|Failure| A
+
+                C --> D[Document Management]
+                C --> E[Masters Management]
+                C --> F[Audit Log]
+
+                D --> G[Create Document]
+                D --> H[View Documents]
+                D --> I[Approval Queue]
+
+                G --> J[Document Creation Form]
+                J --> K[Add Approvers]
+                J --> L[Add Viewers]
+                J --> M[Upload Attachments]
+                J --> N{Save Action}
+                N -->|Save Draft| O[DRAFT State]
+                N -->|Submit for Approval| P[IN_PROCESS State]
+
+                O --> Q[Edit Document]
+                Q --> N
+
+                P --> R[Approval Workflow]
+                R --> S[Sequential Approval]
+                S --> T{Approver Action}
+                T -->|Approve| U{Is Final Approver?}
+                T -->|Reject| V[REJECTED State]
+                T -->|Ask Clarification| W[CLARIFICATION_SOUGHT State]
+
+                U -->|Yes| X[APPROVED State]
+                U -->|No| Y[Next Approver]
+                Y --> T
+
+                W --> Z[Creator Response]
+                Z --> AA[Resubmit for Approval]
+                AA --> P
+
+                V --> BB[Archive Document]
+                X --> BB
+
+                I --> CC[Pending Approvals]
+                CC --> T
+
+                H --> DD[Document Views]
+                DD --> EE[Created by Me]
+                DD --> FF[Shared with Me]
+                DD --> GG[Archived]
+
+                E --> HH[User Management]
+                E --> II[Role Management]
+                E --> JJ[Permission Management]
+                E --> KK[Category Management]
+                E --> LL[Department Management]
+            </div>
+        </div>
+
+        <h2>2. Document States and Transitions</h2>
+        <div class="diagram">
+            <div class="mermaid">
+                stateDiagram-v2
+                [*] --> DRAFT: Create Document
+
+                DRAFT --> DRAFT: Save Changes
+                DRAFT --> IN_PROCESS: Submit for Approval
+
+                IN_PROCESS --> CLARIFICATION_SOUGHT: Ask Clarification
+                IN_PROCESS --> REJECTED: Reject
+                IN_PROCESS --> APPROVED: Final Approval
+
+                CLARIFICATION_SOUGHT --> IN_PROCESS: Resubmit
+                CLARIFICATION_SOUGHT --> DRAFT: Edit and Resubmit
+
+                REJECTED --> ARCHIVED: Archive
+                APPROVED --> ARCHIVED: Archive
+
+                ARCHIVED --> [*]
+            </div>
+        </div>
+
+        <h2>3. User Roles and Permissions</h2>
+        <div class="diagram">
+            <div class="mermaid">
+                graph LR
+                A[User] --> B[Regular User]
+                A --> C[Admin User]
+
+                B --> D[Create Documents]
+                B --> E[View Own Documents]
+                B --> F[Approve Assigned Documents]
+                B --> G[View Shared Documents]
+
+                C --> H[All User Permissions]
+                C --> I[Manage Users]
+                C --> J[Manage Roles]
+                C --> K[Manage Permissions]
+                C --> L[Manage Categories]
+                C --> M[Manage Departments]
+                C --> N[View Audit Log]
+            </div>
+        </div>
+
+        <h2>4. Approval Sequence Workflow</h2>
+        <div class="diagram">
+            <div class="mermaid">
+                sequenceDiagram
+                participant C as Creator
+                participant S as System
+                participant A1 as Approver 1
+                participant A2 as Approver 2
+                participant AF as Final Approver
+
+                C->>S: Create Document
+                C->>S: Add Approvers (Sequential)
+                C->>S: Submit for Approval
+
+                S->>A1: Notify First Approver
+                A1->>S: Review Document
+                A1->>S: Approve/Reject/Ask Clarification
+
+                alt Approve
+                S->>A2: Notify Next Approver
+                A2->>S: Review Document
+                A2->>S: Approve/Reject/Ask Clarification
+
+                alt Approve
+                S->>AF: Notify Final Approver
+                AF->>S: Final Approval
+                S->>C: Document Approved
+                else Reject
+                S->>C: Document Rejected
+                end
+                else Reject
+                S->>C: Document Rejected
+                else Ask Clarification
+                S->>C: Clarification Requested
+                C->>S: Provide Clarification
+                S->>A1: Resubmit for Review
+                end
+            </div>
+        </div>
+
+        <div class="description">
+            <strong>Key Features:</strong>
+            <ul>
+                <li><strong>Document Management:</strong> Create, edit, view, and archive documents with rich text
+                    editing</li>
+                <li><strong>Approval System:</strong> Sequential approval with final approver designation</li>
+                <li><strong>User Management:</strong> Role-based access control with admin and regular user permissions
+                </li>
+                <li><strong>Audit & Tracking:</strong> Complete activity logging and approval history</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+    </script>
+</body>
+
+</html>
