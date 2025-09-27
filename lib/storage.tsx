@@ -56,6 +56,7 @@ export interface EON {
   creator_id: string
   department_id: string
   created_at: string
+  updated_at: string
   submitted_at?: string
   final_approver_id?: string
   state: "DRAFT" | "IN_PROCESS" | "CLARIFICATION_SOUGHT" | "REJECTED" | "APPROVED" | "ARCHIVED" | "DELETED"
@@ -72,6 +73,8 @@ export interface EONApprover {
   acted_at?: string
   action: "CONSENT" | "APPROVE" | "REJECT" | "ASK_CLARIFICATION" | "NONE"
   comment_id?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface EONViewer {
@@ -80,6 +83,8 @@ export interface EONViewer {
   user_id: string
   added_by_user_id: string
   added_at: string
+  created_at: string
+  updated_at: string
 }
 
 export interface EONComment {
@@ -89,6 +94,7 @@ export interface EONComment {
   body_rich: string
   visibility: "all" | "approvers" | "specific"
   created_at: string
+  updated_at: string
   type: "GENERAL" | "CLARIFICATION"
 }
 
@@ -111,6 +117,7 @@ export interface AuditLog {
   ip?: string
   user_agent?: string
   created_at: string
+  updated_at: string
 }
 
 // Storage class for managing JSON data
@@ -176,8 +183,8 @@ class JSONStorage {
     return updatedItem
   }
 
-  delete(entity: string, id: string): boolean {
-    const items = this.getAll(entity)
+  delete<T extends { id: string }>(entity: string, id: string): boolean {
+    const items = this.getAll<T>(entity)
     const filteredItems = items.filter((item) => item.id !== id)
 
     if (filteredItems.length === items.length) return false
@@ -264,7 +271,7 @@ class JSONStorage {
     })
 
     // Update EON state to clarification sought
-    this.update<EON>("eons", eonId, { state: "CLARIFICATION_SOUGHT" })
+    this.update<{ id: string; updated_at: string; state: string }>("eons", eonId, { state: "CLARIFICATION_SOUGHT" })
 
     // Log the action
     this.logAction("REQUEST_CLARIFICATION", fromUserId, eonId, {
@@ -277,7 +284,7 @@ class JSONStorage {
 
   // Audit logging
   logAction(action: string, actorId: string, eonId?: string, payload?: any): void {
-    const auditLog: Omit<AuditLog, "id" | "created_at"> = {
+    const auditLog: Omit<AuditLog, "id" | "created_at" | "updated_at"> = {
       eon_id: eonId,
       actor_user_id: actorId,
       action,

@@ -29,8 +29,10 @@ Password: [generate secure password]
 
 #### Environment Variables:
 ```bash
-# Database Configuration
-DATABASE_URL=postgresql://eon_user:password@postgres:5432/eon_db
+# Database Configuration (REQUIRED)
+# Format: postgresql://username:password@host:port/database
+# For Coolify: 'postgres' is the internal service name
+DATABASE_URL=postgresql://eon_user:your_secure_password@postgres:5432/eon_db
 
 # Application Configuration
 NODE_ENV=production
@@ -40,10 +42,12 @@ PORT=3000
 NEXTAUTH_URL=https://your-domain.com
 NEXTAUTH_SECRET=your-secure-secret-key
 
-# Optional: SSL Configuration
-SSL_MODE=require
+# Database Connection Settings
+SSL_MODE=disable
 POOL_SIZE=10
 ```
+
+**⚠️ IMPORTANT**: Replace `your_secure_password` with the actual password you set when creating the PostgreSQL service in Coolify.
 
 ### 3. Deployment Steps
 
