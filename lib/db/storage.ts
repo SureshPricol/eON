@@ -27,9 +27,36 @@ import type {
 } from '../storage';
 
 export class DatabaseStorage {
+    // Table mapping for string-based access
+    private tableMap = {
+        'users': users,
+        'departments': departments,
+        'categories': categories,
+        'roles': roles,
+        'permissions': permissions,
+        'eons': eons,
+        'eon_approvers': eonApprovers,
+        'eon_viewers': eonViewers,
+        'eon_comments': eonComments,
+        'eon_attachments': eonAttachments,
+        'audit_logs': auditLogs
+    };
+
+    private getTable(tableName: string | any) {
+        if (typeof tableName === 'string') {
+            const table = this.tableMap[tableName as keyof typeof this.tableMap];
+            if (!table) {
+                throw new Error(`Unknown table: ${tableName}`);
+            }
+            return table;
+        }
+        return tableName;
+    }
+
     // Generic CRUD operations
-    async create<T>(table: any, data: Omit<T, 'id' | 'created_at' | 'updated_at'>): Promise<T> {
-        const result = await db.insert(table).values({
+    async create<T>(table: string | any, data: Omit<T, 'id' | 'created_at' | 'updated_at'>): Promise<T> {
+        const tableObj = this.getTable(table);
+        const result = await db.insert(tableObj).values({
             ...data,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
@@ -37,29 +64,33 @@ export class DatabaseStorage {
         return result[0] as T;
     }
 
-    async getById<T>(table: any, id: string): Promise<T | null> {
-        const result = await db.select().from(table).where(eq(table.id, id)).limit(1);
+    async getById<T>(table: string | any, id: string): Promise<T | null> {
+        const tableObj = this.getTable(table);
+        const result = await db.select().from(tableObj).where(eq(tableObj.id, id)).limit(1);
         return result[0] as T || null;
     }
 
-    async getAll<T>(table: any): Promise<T[]> {
-        const result = await db.select().from(table);
+    async getAll<T>(table: string | any): Promise<T[]> {
+        const tableObj = this.getTable(table);
+        const result = await db.select().from(tableObj);
         return result as T[];
     }
 
-    async update<T>(table: any, id: string, data: Partial<T>): Promise<T> {
-        const result = await db.update(table)
+    async update<T>(table: string | any, id: string, data: Partial<T>): Promise<T> {
+        const tableObj = this.getTable(table);
+        const result = await db.update(tableObj)
             .set({
                 ...data,
                 updated_at: new Date().toISOString(),
             } as any)
-            .where(eq(table.id, id))
+            .where(eq(tableObj.id, id))
             .returning();
         return result[0] as T;
     }
 
-    async delete(table: any, id: string): Promise<void> {
-        await db.delete(table).where(eq(table.id, id));
+    async delete(table: string | any, id: string): Promise<void> {
+        const tableObj = this.getTable(table);
+        await db.delete(tableObj).where(eq(tableObj.id, id));
     }
 
     // User operations
@@ -91,7 +122,7 @@ export class DatabaseStorage {
             ))
             .orderBy(desc(eons.created_at));
 
-        return result.map(row => row.eons) as EON[];
+        return result.map((row: any) => row.eons) as EON[];
     }
 
     async getEONsForViewing(viewerId: string): Promise<EON[]> {
@@ -100,7 +131,7 @@ export class DatabaseStorage {
             .where(eq(eonViewers.user_id, viewerId))
             .orderBy(desc(eons.created_at));
 
-        return result.map(row => row.eons) as EON[];
+        return result.map((row: any) => row.eons) as EON[];
     }
 
     async getEONApprovers(eonId: string): Promise<EONApprover[]> {
