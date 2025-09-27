@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (storedUserId) {
           const foundUser = await storage.getById<User>("users", storedUserId)
           console.log("[v0] Found stored user:", foundUser?.email)
-          if (foundUser) {
+          if (foundUser && foundUser.id) {
             setUser(foundUser)
           }
         }
@@ -50,6 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const users = await storage.getAll<User>("users")
+
+      // Ensure users is an array
+      if (!Array.isArray(users)) {
+        console.error("[v0] Users is not an array:", users)
+        return false
+      }
+
       console.log(
         "[v0] Available users:",
         users.map((u) => u.email),
@@ -88,6 +95,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const roles = await storage.getAll<Role>("roles")
+
+      // Ensure roles is an array
+      if (!Array.isArray(roles)) {
+        console.error("[v0] Roles is not an array:", roles)
+        return false
+      }
+
       const userRoles = roles.filter((role) => user.roles.includes(role.name))
 
       return userRoles.some((role) => role.permissions.includes(permission))

@@ -580,12 +580,19 @@ if (typeof window === 'undefined') {
 
     async getById(table: string, id: string) {
       const response = await fetch(`/api/data/${table}/${id}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${table} with id ${id}`);
+      }
       return response.json();
     },
 
     async getAll(table: string) {
       const response = await fetch(`/api/data/${table}`);
-      return response.json();
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${table}`);
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     },
 
     async update(table: string, id: string, data: any) {
