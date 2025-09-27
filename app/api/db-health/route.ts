@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, isDatabaseConnected, testDatabaseConnection } from '@/lib/db/connection';
+import { db, isDatabaseConnected, testDatabaseConnection, waitForDatabaseConnection } from '@/lib/db/connection';
 import { users, departments, categories, eons } from '@/lib/db/schema';
 
 export async function GET(request: NextRequest) {
     try {
         console.log('🔍 Running database health check...');
 
-        // Check if database is connected
-        const isConnected = isDatabaseConnected();
+        // Wait for database connection
+        const isConnected = await waitForDatabaseConnection();
         if (!isConnected) {
             return NextResponse.json({
                 healthy: false,
-                error: 'Database not connected',
+                error: 'Database not connected or connection timeout',
                 users: [],
                 departments: [],
                 categories: [],

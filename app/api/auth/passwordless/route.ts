@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db/connection';
+import { db, waitForDatabaseConnection } from '@/lib/db/connection';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -20,11 +20,12 @@ export async function POST(request: NextRequest) {
 
         console.log(`🔐 Passwordless login requested for: ${email}`);
 
-        // Check if database is connected
-        if (!db) {
+        // Wait for database connection
+        const isConnected = await waitForDatabaseConnection();
+        if (!isConnected || !db) {
             return NextResponse.json({
                 success: false,
-                error: 'Database not connected'
+                error: 'Database not connected or connection timeout'
             }, { status: 500 });
         }
 

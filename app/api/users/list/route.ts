@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db/connection';
+import { db, waitForDatabaseConnection } from '@/lib/db/connection';
 import { users, departments } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -7,11 +7,12 @@ export async function GET(request: NextRequest) {
     try {
         console.log('👥 Fetching user list...');
 
-        // Check if database is connected
-        if (!db) {
+        // Wait for database connection
+        const isConnected = await waitForDatabaseConnection();
+        if (!isConnected || !db) {
             return NextResponse.json({
                 success: false,
-                error: 'Database not connected',
+                error: 'Database not connected or connection timeout',
                 users: []
             }, { status: 500 });
         }
@@ -73,11 +74,12 @@ export async function POST(request: NextRequest) {
     try {
         console.log('🌱 Seeding database with users...');
 
-        // Check if database is connected
-        if (!db) {
+        // Wait for database connection
+        const isConnected = await waitForDatabaseConnection();
+        if (!isConnected || !db) {
             return NextResponse.json({
                 success: false,
-                error: 'Database not connected'
+                error: 'Database not connected or connection timeout'
             }, { status: 500 });
         }
 

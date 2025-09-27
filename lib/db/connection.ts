@@ -9,9 +9,10 @@ class DatabaseConnection {
   private isInitialized = false;
   private retryCount = 0;
   private maxRetries = 3;
+  private initializationPromise: Promise<void> | null = null;
 
   constructor() {
-    this.initialize();
+    this.initializationPromise = this.initialize();
   }
 
   private async initialize() {
@@ -136,6 +137,29 @@ class DatabaseConnection {
     return this.isInitialized && this.db !== null && this.pool !== null;
   }
 
+  public async waitForConnection(timeout = 10000) {
+    if (this.isInitialized) {
+      return true;
+    }
+
+    if (this.initializationPromise) {
+      try {
+        await Promise.race([
+          this.initializationPromise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Connection timeout')), timeout)
+          )
+        ]);
+        return this.isInitialized;
+      } catch (error) {
+        console.error('❌ Database connection timeout:', error);
+        return false;
+      }
+    }
+
+    return false;
+  }
+
   public async testConnection() {
     if (!this.isConnected()) {
       return false;
@@ -166,12 +190,22 @@ class DatabaseConnection {
 // Create singleton instance
 const dbConnection = new DatabaseConnection();
 
-// Export the database instance
+// Export the database instance with proper initialization
 export const db = dbConnection.getDb();
 
 // Export connection utilities
 export const isDatabaseConnected = () => dbConnection.isConnected();
 export const testDatabaseConnection = () => dbConnection.testConnection();
 export const closeDatabaseConnection = () => dbConnection.close();
+export const waitForDatabaseConnection = () => dbConnection.waitForConnection();
+
+// Wait for database connection to be established
+setTimeout(() => {
+  if (dbConnection.isConnected()) {
+    console.log('✅ Database connection established and ready');
+  } else {
+    console.log('⚠️  Database connection not yet established');
+  }
+}, 2000);
 
 export type Database = typeof db;
