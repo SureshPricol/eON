@@ -12,6 +12,7 @@
     "db:seed": "node scripts/simple-seed.js",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "db:diagnose": "node scripts/diagnose-db.js",
+    "db:check-seed": "node scripts/check-and-seed.js",
     "generate:secret": "node scripts/generate-secret.js",
     "postbuild": "node scripts/postbuild.js"
   },

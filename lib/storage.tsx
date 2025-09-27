@@ -104,7 +104,7 @@ const fallbackStorage = {
 
 // For server-side, we need to handle the async initialization differently
 if (typeof window === 'undefined') {
-  // Server-side: Initialize storage synchronously with a fallback
+  // Server-side: Initialize storage with proper async handling
   try {
     // Try to require the module synchronously first
     const dbStorageModule = require('./db/storage');
@@ -112,7 +112,7 @@ if (typeof window === 'undefined') {
       storage = dbStorageModule.storage;
       console.log('[Storage] Server-side database storage loaded successfully (sync)');
     } else {
-      console.log('[Storage] Database storage module is null or not available, using fallback');
+      console.log('[Storage] Database storage module is null, using fallback storage');
       storage = fallbackStorage;
     }
   } catch (error) {
