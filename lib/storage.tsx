@@ -24,107 +24,102 @@ export type {
 // Conditional import based on environment
 let storage: any;
 
-if (typeof window === 'undefined') {
-  // Server-side: use database storage
-  try {
-    // Try different import methods for better compatibility
-    let dbStorageModule;
-    try {
-      dbStorageModule = require('./db/storage');
-    } catch (requireError) {
-      console.log('[Storage] require() failed, trying dynamic import...');
-      // This won't work in require context, but let's try
-      throw requireError;
-    }
+// Fallback storage implementation
+const fallbackStorage = {
+  async getAll() {
+    console.log('[Storage] Fallback getAll called');
+    return [];
+  },
+  async getById() {
+    console.log('[Storage] Fallback getById called');
+    return null;
+  },
+  async create() {
+    console.log('[Storage] Fallback create called');
+    throw new Error('Database storage not available');
+  },
+  async update() {
+    console.log('[Storage] Fallback update called');
+    throw new Error('Database storage not available');
+  },
+  async delete() {
+    console.log('[Storage] Fallback delete called');
+    throw new Error('Database storage not available');
+  },
+  async getUserByEmail() {
+    console.log('[Storage] Fallback getUserByEmail called');
+    return null;
+  },
+  async getUsersByDepartment() {
+    console.log('[Storage] Fallback getUsersByDepartment called');
+    return [];
+  },
+  async getEONsByCreator() {
+    console.log('[Storage] Fallback getEONsByCreator called');
+    return [];
+  },
+  async getEONsForApproval() {
+    console.log('[Storage] Fallback getEONsForApproval called');
+    return [];
+  },
+  async getEONsForViewing() {
+    console.log('[Storage] Fallback getEONsForViewing called');
+    return [];
+  },
+  async getEONApprovers() {
+    console.log('[Storage] Fallback getEONApprovers called');
+    return [];
+  },
+  async getEONViewers() {
+    console.log('[Storage] Fallback getEONViewers called');
+    return [];
+  },
+  async getEONComments() {
+    console.log('[Storage] Fallback getEONComments called');
+    return [];
+  },
+  async getEONAttachments() {
+    console.log('[Storage] Fallback getEONAttachments called');
+    return [];
+  },
+  async searchEONs() {
+    console.log('[Storage] Fallback searchEONs called');
+    return [];
+  },
+  async logAction() {
+    console.log('[Storage] Fallback logAction called - audit logging disabled');
+  },
+  async getAuditLogs() {
+    console.log('[Storage] Fallback getAuditLogs called');
+    return [];
+  },
+  async generateEONNumber() {
+    console.log('[Storage] Fallback generateEONNumber called');
+    return 'ERROR-001';
+  },
+  async initializeDefaultData() {
+    console.log('[Storage] Fallback initializeDefaultData called - database initialization skipped');
+  }
+};
 
+// For server-side, we need to handle the async initialization differently
+if (typeof window === 'undefined') {
+  // Server-side: Initialize storage synchronously with a fallback
+  try {
+    // Try to require the module synchronously first
+    const dbStorageModule = require('./db/storage');
     if (dbStorageModule && dbStorageModule.storage) {
       storage = dbStorageModule.storage;
-      console.log('[Storage] Server-side database storage loaded successfully');
+      console.log('[Storage] Server-side database storage loaded successfully (sync)');
     } else {
       throw new Error('Database storage module not properly exported');
     }
   } catch (error) {
-    console.error('[Storage] Failed to load database storage:', error);
-    console.error('[Storage] Error details:', error.message);
-    console.error('[Storage] Stack trace:', error.stack);
+    console.error('[Storage] Failed to load database storage (sync):', error);
+    console.error('[Storage] Error details:', error instanceof Error ? error.message : String(error));
 
-    // Fallback to a minimal storage implementation
-    storage = {
-      async getAll() {
-        console.log('[Storage] Fallback getAll called');
-        return [];
-      },
-      async getById() {
-        console.log('[Storage] Fallback getById called');
-        return null;
-      },
-      async create() {
-        console.log('[Storage] Fallback create called');
-        throw new Error('Database storage not available');
-      },
-      async update() {
-        console.log('[Storage] Fallback update called');
-        throw new Error('Database storage not available');
-      },
-      async delete() {
-        console.log('[Storage] Fallback delete called');
-        throw new Error('Database storage not available');
-      },
-      async getUserByEmail() {
-        console.log('[Storage] Fallback getUserByEmail called');
-        return null;
-      },
-      async getUsersByDepartment() {
-        console.log('[Storage] Fallback getUsersByDepartment called');
-        return [];
-      },
-      async getEONsByCreator() {
-        console.log('[Storage] Fallback getEONsByCreator called');
-        return [];
-      },
-      async getEONsForApproval() {
-        console.log('[Storage] Fallback getEONsForApproval called');
-        return [];
-      },
-      async getEONsForViewing() {
-        console.log('[Storage] Fallback getEONsForViewing called');
-        return [];
-      },
-      async getEONApprovers() {
-        console.log('[Storage] Fallback getEONApprovers called');
-        return [];
-      },
-      async getEONViewers() {
-        console.log('[Storage] Fallback getEONViewers called');
-        return [];
-      },
-      async getEONComments() {
-        console.log('[Storage] Fallback getEONComments called');
-        return [];
-      },
-      async getEONAttachments() {
-        console.log('[Storage] Fallback getEONAttachments called');
-        return [];
-      },
-      async searchEONs() {
-        console.log('[Storage] Fallback searchEONs called');
-        return [];
-      },
-      async logAction() {
-        console.log('[Storage] Fallback logAction called - audit logging disabled');
-      },
-      async getAuditLogs() {
-        console.log('[Storage] Fallback getAuditLogs called');
-        return [];
-      },
-      async generateEONNumber() {
-        console.log('[Storage] Fallback generateEONNumber called');
-        return 'ERROR-001';
-      },
-      async initializeDefaultData() {
-        console.log('[Storage] Fallback initializeDefaultData called - database initialization skipped');
-      }
-    };
+    // Use fallback storage
+    storage = fallbackStorage;
   }
 } else {
   // Client-side: use API-based storage
@@ -217,7 +212,7 @@ if (typeof window === 'undefined') {
   };
 }
 
-// Validate storage object before export
+// Validate storage object
 if (!storage) {
   console.error('[Storage] CRITICAL ERROR: Storage object is undefined!');
   throw new Error('Storage object failed to initialize');
