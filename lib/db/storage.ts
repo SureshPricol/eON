@@ -1,4 +1,5 @@
 import { db } from './connection';
+import { checkDatabaseHealth } from './health';
 import {
     users,
     departments,
@@ -42,6 +43,20 @@ export class DatabaseStorage {
         'audit_logs': auditLogs
     };
 
+    private async ensureDatabaseHealth(): Promise<boolean> {
+        try {
+            const health = await checkDatabaseHealth();
+            if (!health.healthy) {
+                console.error(`[DatabaseStorage] Database not healthy: ${health.error}`);
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('[DatabaseStorage] Health check failed:', error);
+            return false;
+        }
+    }
+
     private getTable(tableName: string | any) {
         if (typeof tableName === 'string') {
             const table = this.tableMap[tableName as keyof typeof this.tableMap];
@@ -71,9 +86,24 @@ export class DatabaseStorage {
     }
 
     async getAll<T>(table: string | any): Promise<T[]> {
-        const tableObj = this.getTable(table);
-        const result = await db.select().from(tableObj);
-        return result as T[];
+        try {
+            // Check database health first
+            const isHealthy = await this.ensureDatabaseHealth();
+            if (!isHealthy) {
+                console.log(`[DatabaseStorage] Database not healthy, returning empty array for table: ${typeof table === 'string' ? table : 'object'}`);
+                return [];
+            }
+
+            const tableObj = this.getTable(table);
+            console.log(`[DatabaseStorage] Getting all records from table: ${typeof table === 'string' ? table : 'object'}`);
+            const result = await db.select().from(tableObj);
+            console.log(`[DatabaseStorage] Retrieved ${result.length} records`);
+            return result as T[];
+        } catch (error) {
+            console.error(`[DatabaseStorage] Error in getAll for table ${typeof table === 'string' ? table : 'object'}:`, error);
+            // Return empty array if table doesn't exist or query fails
+            return [];
+        }
     }
 
     async update<T>(table: string | any, id: string, data: Partial<T>): Promise<T> {
