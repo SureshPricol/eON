@@ -2,10 +2,10 @@ const { Pool } = require('pg');
 
 async function healthCheck() {
   console.log('🔍 Running database health check...');
-  
+
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: false, // Disable SSL for Coolify PostgreSQL
   });
 
   try {
@@ -13,9 +13,9 @@ async function healthCheck() {
     const client = await pool.connect();
     await client.query('SELECT 1');
     client.release();
-    
+
     console.log('✅ Database connection successful');
-    
+
     // Check if tables exist
     const result = await pool.query(`
       SELECT table_name 
@@ -23,7 +23,7 @@ async function healthCheck() {
       WHERE table_schema = 'public' 
       AND table_name IN ('users', 'departments', 'categories', 'eons')
     `);
-    
+
     if (result.rows.length >= 4) {
       console.log('✅ Database tables exist');
       return true;

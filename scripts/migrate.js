@@ -8,7 +8,7 @@ async function runMigrations() {
 
     const pool = new Pool({
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        ssl: false, // Disable SSL for Coolify PostgreSQL
     });
 
     const db = drizzle(pool);
