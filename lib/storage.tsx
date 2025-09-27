@@ -573,7 +573,7 @@ if (typeof window === 'undefined') {
       // This won't work in require context, but let's try
       throw requireError;
     }
-    
+
     if (dbStorageModule && dbStorageModule.storage) {
       storage = dbStorageModule.storage;
       console.log('[Storage] Server-side database storage loaded successfully');
@@ -584,81 +584,81 @@ if (typeof window === 'undefined') {
     console.error('[Storage] Failed to load database storage:', error);
     console.error('[Storage] Error details:', error.message);
     console.error('[Storage] Stack trace:', error.stack);
-    
+
     // Fallback to a minimal storage implementation
     storage = {
-      async getAll() { 
+      async getAll() {
         console.log('[Storage] Fallback getAll called');
-        return []; 
+        return [];
       },
-      async getById() { 
+      async getById() {
         console.log('[Storage] Fallback getById called');
-        return null; 
+        return null;
       },
-      async create() { 
+      async create() {
         console.log('[Storage] Fallback create called');
-        throw new Error('Database storage not available'); 
+        throw new Error('Database storage not available');
       },
-      async update() { 
+      async update() {
         console.log('[Storage] Fallback update called');
-        throw new Error('Database storage not available'); 
+        throw new Error('Database storage not available');
       },
-      async delete() { 
+      async delete() {
         console.log('[Storage] Fallback delete called');
-        throw new Error('Database storage not available'); 
+        throw new Error('Database storage not available');
       },
-      async getUserByEmail() { 
+      async getUserByEmail() {
         console.log('[Storage] Fallback getUserByEmail called');
-        return null; 
+        return null;
       },
-      async getUsersByDepartment() { 
+      async getUsersByDepartment() {
         console.log('[Storage] Fallback getUsersByDepartment called');
-        return []; 
+        return [];
       },
-      async getEONsByCreator() { 
+      async getEONsByCreator() {
         console.log('[Storage] Fallback getEONsByCreator called');
-        return []; 
+        return [];
       },
-      async getEONsForApproval() { 
+      async getEONsForApproval() {
         console.log('[Storage] Fallback getEONsForApproval called');
-        return []; 
+        return [];
       },
-      async getEONsForViewing() { 
+      async getEONsForViewing() {
         console.log('[Storage] Fallback getEONsForViewing called');
-        return []; 
+        return [];
       },
-      async getEONApprovers() { 
+      async getEONApprovers() {
         console.log('[Storage] Fallback getEONApprovers called');
-        return []; 
+        return [];
       },
-      async getEONViewers() { 
+      async getEONViewers() {
         console.log('[Storage] Fallback getEONViewers called');
-        return []; 
+        return [];
       },
-      async getEONComments() { 
+      async getEONComments() {
         console.log('[Storage] Fallback getEONComments called');
-        return []; 
+        return [];
       },
-      async getEONAttachments() { 
+      async getEONAttachments() {
         console.log('[Storage] Fallback getEONAttachments called');
-        return []; 
+        return [];
       },
-      async searchEONs() { 
+      async searchEONs() {
         console.log('[Storage] Fallback searchEONs called');
-        return []; 
+        return [];
       },
-      async logAction() { 
+      async logAction() {
         console.log('[Storage] Fallback logAction called - audit logging disabled');
       },
-      async getAuditLogs() { 
+      async getAuditLogs() {
         console.log('[Storage] Fallback getAuditLogs called');
-        return []; 
+        return [];
       },
-      async generateEONNumber() { 
+      async generateEONNumber() {
         console.log('[Storage] Fallback generateEONNumber called');
-        return 'ERROR-001'; 
+        return 'ERROR-001';
       },
-      async initializeDefaultData() { 
+      async initializeDefaultData() {
         console.log('[Storage] Fallback initializeDefaultData called - database initialization skipped');
       }
     };
