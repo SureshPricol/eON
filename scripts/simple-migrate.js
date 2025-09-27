@@ -13,9 +13,19 @@ async function runSimpleMigrations() {
         process.exit(1);
     }
 
+    // SSL configuration for different environments
+    let sslConfig = false;
+    if (process.env.NODE_ENV === 'production' && process.env.SSL_MODE === 'require') {
+        sslConfig = { rejectUnauthorized: false };
+    } else if (process.env.SSL_MODE === 'disable') {
+        sslConfig = false;
+    } else {
+        sslConfig = process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false;
+    }
+
     const pool = new Pool({
         connectionString: process.env.DATABASE_URL,
-        ssl: false, // Disable SSL for Coolify PostgreSQL
+        ssl: sslConfig,
     });
 
     const client = await pool.connect();

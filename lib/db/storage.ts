@@ -1,4 +1,4 @@
-import { db } from './connection';
+import { db, isDatabaseConnected, testDatabaseConnection } from './connection';
 import { checkDatabaseHealth } from './health';
 import {
     users,
@@ -43,6 +43,10 @@ export class DatabaseStorage {
         'audit_logs': auditLogs
     };
 
+    private isDatabaseAvailable(): boolean {
+        return isDatabaseConnected() && db !== null && db !== undefined;
+    }
+
     private async ensureDatabaseHealth(): Promise<boolean> {
         try {
             const health = await checkDatabaseHealth();
@@ -70,6 +74,9 @@ export class DatabaseStorage {
 
     // Generic CRUD operations
     async create<T>(table: string | any, data: Omit<T, 'id' | 'created_at' | 'updated_at'>): Promise<T> {
+        if (!this.isDatabaseAvailable()) {
+            throw new Error('Database not available');
+        }
         const tableObj = this.getTable(table);
         const result = await db.insert(tableObj).values({
             ...data,
@@ -80,12 +87,18 @@ export class DatabaseStorage {
     }
 
     async getById<T>(table: string | any, id: string): Promise<T | null> {
+        if (!this.isDatabaseAvailable()) {
+            throw new Error('Database not available');
+        }
         const tableObj = this.getTable(table);
         const result = await db.select().from(tableObj).where(eq(tableObj.id, id)).limit(1);
         return result[0] as T || null;
     }
 
     async getAll<T>(table: string | any): Promise<T[]> {
+        if (!this.isDatabaseAvailable()) {
+            throw new Error('Database not available');
+        }
         try {
             // Check database health first
             const isHealthy = await this.ensureDatabaseHealth();
@@ -281,5 +294,15 @@ export class DatabaseStorage {
     }
 }
 
-// Export singleton instance
-export const storage = new DatabaseStorage();
+// Export singleton instance with error handling
+let storage: DatabaseStorage | null = null;
+
+try {
+    storage = new DatabaseStorage();
+    console.log('✅ DatabaseStorage instance created successfully');
+} catch (error) {
+    console.error('❌ Failed to create DatabaseStorage instance:', error);
+    storage = null;
+}
+
+export { storage };

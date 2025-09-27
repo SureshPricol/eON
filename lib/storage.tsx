@@ -108,11 +108,12 @@ if (typeof window === 'undefined') {
   try {
     // Try to require the module synchronously first
     const dbStorageModule = require('./db/storage');
-    if (dbStorageModule && dbStorageModule.storage) {
+    if (dbStorageModule && dbStorageModule.storage && dbStorageModule.storage !== null) {
       storage = dbStorageModule.storage;
       console.log('[Storage] Server-side database storage loaded successfully (sync)');
     } else {
-      throw new Error('Database storage module not properly exported');
+      console.log('[Storage] Database storage module is null or not available, using fallback');
+      storage = fallbackStorage;
     }
   } catch (error) {
     console.error('[Storage] Failed to load database storage (sync):', error);
