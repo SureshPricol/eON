@@ -87,9 +87,10 @@ Environment: Windows 10 (Node v20.19.4)
   - Post-deployment: `npm run db:setup` (runs migrations and seeds data)
 
 - Default users after seeding:
-  - Admin: `admin@eon.com` (Administrator role)
-  - Users: `john.doe@eon.com`, `jane.smith@eon.com`, `bob.wilson@eon.com`
-  - Default password: `password123` (change in production)
+  - Admin: `john.smith@company.com` (Administrator role)
+  - Managers: `jane.doe@company.com`, `sarah.wilson@company.com`
+  - Employees: `alex.chen@company.com`, `mike.johnson@company.com`
+  - No password required (email-only authentication for demo)
 
 ## Recommendations
 - Prefer the local binary or `npm run dev` (after ensuring local Next is installed) over `npx next dev` to avoid version drift.
@@ -98,3 +99,21 @@ Environment: Windows 10 (Node v20.19.4)
 - For production deployment: ensure PostgreSQL database is set up in Coolify before deployment.
 - After first deployment: run `npm run db:setup` to initialize database schema and seed data.
 - Change default passwords in production environment.
+
+## Login System Fix (2025-01-27)
+
+**Issue**: Login error "An error occurred during login. Please try again."
+
+**Root Cause**: Mismatch between demo users displayed on login page and users created in database.
+
+**Solution**: Updated `scripts/simple-seed.js` to create users that match the login page:
+- `john.smith@company.com` (Admin)
+- `jane.doe@company.com` (Manager)  
+- `alex.chen@company.com` (Employee)
+- `sarah.wilson@company.com` (Manager)
+- `mike.johnson@company.com` (Employee)
+
+**Additional Fixes**:
+- Enhanced database health checks in storage layer
+- Added graceful error handling for database connectivity issues
+- Created `/api/db-health` endpoint for debugging

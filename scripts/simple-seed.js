@@ -106,10 +106,11 @@ async function seedDatabase() {
         // Create users
         console.log('👤 Creating users...');
         const userQueries = [
-            ['admin@eon.com', 'Admin User', departments.FIN.id, ['Admin'], 'active'],
-            ['john.doe@eon.com', 'John Doe', departments.HR.id, ['Manager'], 'active'],
-            ['jane.smith@eon.com', 'Jane Smith', departments.IT.id, ['Employee'], 'active'],
-            ['bob.wilson@eon.com', 'Bob Wilson', departments.FIN.id, ['Employee'], 'active']
+            ['john.smith@company.com', 'John Smith', departments.FIN.id, ['Admin'], 'active'],
+            ['jane.doe@company.com', 'Jane Doe', departments.HR.id, ['Manager'], 'active'],
+            ['alex.chen@company.com', 'Alex Chen', departments.IT.id, ['Employee'], 'active'],
+            ['sarah.wilson@company.com', 'Sarah Wilson', departments.HR.id, ['Manager'], 'active'],
+            ['mike.johnson@company.com', 'Mike Johnson', departments.FIN.id, ['Employee'], 'active']
         ];
 
         const users = {};
