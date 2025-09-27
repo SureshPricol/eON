@@ -25,7 +25,7 @@ import type {
     EONViewer,
     EONComment,
     EONAttachment
-} from '../storage';
+} from '../types';
 
 export class DatabaseStorage {
     // Table mapping for string-based access
