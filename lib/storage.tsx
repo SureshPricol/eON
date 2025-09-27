@@ -1,5 +1,8 @@
 // Database-based storage system for eON application
 // This file is kept for backward compatibility - actual implementation is in lib/db/storage.ts
+
+// For client-side, we'll use a mock storage that makes API calls
+// For server-side, we'll use the actual database storage
 export interface User {
   id: string
   email: string
@@ -548,8 +551,94 @@ class JSONStorage {
   }
 }
 
-// Import the new database storage
-export { storage } from './db/storage'
+// Conditional import based on environment
+let storage: any;
+
+if (typeof window === 'undefined') {
+  // Server-side: use database storage
+  const { storage: dbStorage } = require('./db/storage');
+  storage = dbStorage;
+} else {
+  // Client-side: use API-based storage
+  storage = {
+    // Mock implementation that makes API calls
+    async create(table: string, data: any) {
+      const response = await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', table, data })
+      });
+      return response.json();
+    },
+
+    async getById(table: string, id: string) {
+      const response = await fetch(`/api/data/${table}/${id}`);
+      return response.json();
+    },
+
+    async getAll(table: string) {
+      const response = await fetch(`/api/data/${table}`);
+      return response.json();
+    },
+
+    async update(table: string, id: string, data: any) {
+      const response = await fetch(`/api/data/${table}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return response.json();
+    },
+
+    async delete(table: string, id: string) {
+      const response = await fetch(`/api/data/${table}/${id}`, {
+        method: 'DELETE'
+      });
+      return response.json();
+    },
+
+    // Add other methods as needed
+    getUserByEmail: async (email: string) => {
+      const response = await fetch(`/api/users/email/${email}`);
+      return response.json();
+    },
+
+    getEONsByCreator: async (creatorId: string) => {
+      const response = await fetch(`/api/eons/creator/${creatorId}`);
+      return response.json();
+    },
+
+    getEONsForApproval: async (approverId: string) => {
+      const response = await fetch(`/api/eons/approval/${approverId}`);
+      return response.json();
+    },
+
+    getEONsForViewing: async (viewerId: string) => {
+      const response = await fetch(`/api/eons/viewing/${viewerId}`);
+      return response.json();
+    },
+
+    logAction: async (action: string, userId: string, entityId?: string, details?: any) => {
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, userId, entityId, details })
+      });
+      return response.json();
+    },
+
+    generateEONNumber: async (departmentCode: string) => {
+      const response = await fetch(`/api/eons/generate-number/${departmentCode}`);
+      return response.json();
+    },
+
+    initializeDefaultData: async () => {
+      // No-op on client side
+    }
+  };
+}
+
+export { storage };
 
 if (typeof window !== "undefined") {
   // Use setTimeout to ensure DOM is ready
