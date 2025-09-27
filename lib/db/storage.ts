@@ -13,7 +13,7 @@ import {
     eonAttachments,
     auditLogs
 } from './schema';
-import { eq, and, desc, asc, like, or } from 'drizzle-orm';
+import { eq, and, desc, asc, like, or, ne } from 'drizzle-orm';
 import type {
     User,
     Department,
@@ -137,7 +137,7 @@ export class DatabaseStorage {
     // EON operations
     async getEONsByCreator(creatorId: string): Promise<EON[]> {
         const result = await db.select().from(eons)
-            .where(and(eq(eons.creator_id, creatorId), eq(eons.state, 'DELETED')))
+            .where(and(eq(eons.creator_id, creatorId), ne(eons.state, 'DELETED')))
             .orderBy(desc(eons.created_at));
         return result as EON[];
     }
@@ -224,7 +224,7 @@ export class DatabaseStorage {
             user_id: userId,
             action,
             entity_type: entityType,
-            entity_id: entityType,
+            entity_id: entityId,
             details,
             created_at: new Date().toISOString(),
         });

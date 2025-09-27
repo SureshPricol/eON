@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { storage } from '@/lib/db/storage';
+import { storage } from '@/lib/storage';
 
 export async function GET() {
     try {
         console.log('[Debug] Getting all users from database...');
         const users = await storage.getAll('users');
-        
+
         console.log(`[Debug] Retrieved ${users.length} users`);
-        
+
         return NextResponse.json({
             count: users.length,
             users: users.map(user => ({

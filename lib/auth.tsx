@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log("[v0] Stored user ID:", storedUserId)
 
         if (storedUserId) {
-          const foundUser = await storage.getById<User>("users", storedUserId)
+          const foundUser = await storage.getById("users", storedUserId) as User | null
           console.log("[v0] Found stored user:", foundUser?.email)
           if (foundUser && foundUser.id) {
             setUser(foundUser)
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log("[v0] Attempting login for:", email)
 
     try {
-      const users = await storage.getAll<User>("users")
+      const users = await storage.getAll("users") as User[]
 
       // Ensure users is an array
       if (!Array.isArray(users)) {
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return false
 
     try {
-      const roles = await storage.getAll<Role>("roles")
+      const roles = await storage.getAll("roles") as Role[]
 
       // Ensure roles is an array
       if (!Array.isArray(roles)) {
