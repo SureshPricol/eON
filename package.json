@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "next build && node scripts/postbuild.js",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "start:with-migrations": "bash scripts/start.sh",
     "db:generate": "node scripts/generate-migrations.js",
     "db:migrate": "node scripts/migrate.js",
     "db:seed": "node scripts/seed.js",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "postbuild": "node scripts/postbuild.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -10,10 +10,3 @@ const pool = new Pool({
 export const db = drizzle(pool, { schema });
 
 export type Database = typeof db;
-
-// Initialize database on startup in production
-if (process.env.NODE_ENV === 'production') {
-  import('./init').then(({ initializeDatabase }) => {
-    initializeDatabase().catch(console.error);
-  });
-}

@@ -23,10 +23,9 @@ Password: [generate secure password]
 ### 2. Application Configuration
 
 #### Build Settings:
-- **Build Command**: `npm run build`
-- **Start Command**: `npm start` (or `npm run start:with-migrations` for automatic migrations)
+- **Build Command**: `npm run build` (includes automatic migrations)
+- **Start Command**: `npm start`
 - **Port**: `3000`
-- **Dockerfile**: Use the provided Dockerfile for automatic migration setup
 
 #### Environment Variables:
 ```bash
@@ -56,19 +55,20 @@ POOL_SIZE=10
 ### 4. Post-Deployment Setup
 
 **Option A: Automatic Migrations (Recommended)**
-- Use the provided Dockerfile or `start:with-migrations` script
-- Migrations run automatically on container startup
+- Migrations run automatically during the build process
 - No manual intervention required
+- Build command includes: `npm run build && node scripts/postbuild.js`
 
-**Option B: Manual Setup (if terminal is available)**
+**Option B: API-Based Setup**
+- Use the health check endpoint: `GET /api/health`
+- Trigger setup via API: `POST /api/setup`
+- No terminal access required
+
+**Option C: Manual Setup (if terminal is available)**
 ```bash
 # SSH into your container or use Coolify's terminal
 npm run db:setup
 ```
-
-**Option C: Application-Level Initialization**
-- The app automatically initializes the database on first startup
-- No additional commands needed
 
 This will:
 - Run database migrations to create tables
