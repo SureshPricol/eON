@@ -23,22 +23,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initAuth = async () => {
       console.log("[v0] Initializing auth...")
 
-      // Ensure storage is initialized first
-      storage.initializeDefaultData()
+      try {
+        // Check for stored session
+        const storedUserId = localStorage.getItem("eon_current_user_id")
+        console.log("[v0] Stored user ID:", storedUserId)
 
-      // Check for stored session
-      const storedUserId = localStorage.getItem("eon_current_user_id")
-      console.log("[v0] Stored user ID:", storedUserId)
-
-      if (storedUserId) {
-        const foundUser = storage.getById<User>("users", storedUserId)
-        console.log("[v0] Found stored user:", foundUser?.email)
-        if (foundUser) {
-          setUser(foundUser)
+        if (storedUserId) {
+          const foundUser = await storage.getById<User>("users", storedUserId)
+          console.log("[v0] Found stored user:", foundUser?.email)
+          if (foundUser) {
+            setUser(foundUser)
+          }
         }
+      } catch (error) {
+        console.error("[v0] Auth initialization error:", error)
+      } finally {
+        setIsLoading(false)
       }
-
-      setIsLoading(false)
     }
 
     initAuth()
@@ -47,46 +48,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string): Promise<boolean> => {
     console.log("[v0] Attempting login for:", email)
 
-    // Ensure storage is initialized
-    storage.initializeDefaultData()
+    try {
+      const users = await storage.getAll<User>("users")
+      console.log(
+        "[v0] Available users:",
+        users.map((u) => u.email),
+      )
 
-    const users = storage.getAll<User>("users")
-    console.log(
-      "[v0] Available users:",
-      users.map((u) => u.email),
-    )
+      const foundUser = users.find((u) => u.email.toLowerCase() === email.toLowerCase() && u.status === "active")
+      console.log("[v0] Found user:", foundUser?.email)
 
-    const foundUser = users.find((u) => u.email.toLowerCase() === email.toLowerCase() && u.status === "active")
-    console.log("[v0] Found user:", foundUser?.email)
+      if (foundUser) {
+        setUser(foundUser)
+        localStorage.setItem("eon_current_user_id", foundUser.id)
+        await storage.logAction("LOGIN", foundUser.id)
+        console.log("[v0] Login successful for:", foundUser.email)
+        return true
+      }
 
-    if (foundUser) {
-      setUser(foundUser)
-      localStorage.setItem("eon_current_user_id", foundUser.id)
-      storage.logAction("LOGIN", foundUser.id)
-      console.log("[v0] Login successful for:", foundUser.email)
-      return true
+      console.log("[v0] Login failed for:", email)
+      return false
+    } catch (error) {
+      console.error("[v0] Login error:", error)
+      return false
     }
-
-    console.log("[v0] Login failed for:", email)
-    return false
   }
 
-  const logout = () => {
+  const logout = async () => {
     if (user) {
-      storage.logAction("LOGOUT", user.id)
+      await storage.logAction("LOGOUT", user.id)
     }
     setUser(null)
     localStorage.removeItem("eon_current_user_id")
     console.log("[v0] User logged out, localStorage cleared")
   }
 
-  const hasPermission = (permission: string): boolean => {
+  const hasPermission = async (permission: string): Promise<boolean> => {
     if (!user) return false
 
-    const roles = storage.getAll<Role>("roles")
-    const userRoles = roles.filter((role) => user.roles.includes(role.name))
+    try {
+      const roles = await storage.getAll<Role>("roles")
+      const userRoles = roles.filter((role) => user.roles.includes(role.name))
 
-    return userRoles.some((role) => role.permissions.includes(permission))
+      return userRoles.some((role) => role.permissions.includes(permission))
+    } catch (error) {
+      console.error("[v0] Permission check error:", error)
+      return false
+    }
   }
 
   const isAdmin = (): boolean => {
