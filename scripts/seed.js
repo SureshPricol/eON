@@ -1,13 +1,4 @@
-const { drizzle } = require('drizzle-orm/node-postgres');
 const { Pool } = require('pg');
-const { eq } = require('drizzle-orm');
-const {
-    users,
-    departments,
-    categories,
-    roles,
-    permissions
-} = require('../lib/db/schema');
 
 async function seedDatabase() {
     console.log('🌱 Starting database seeding...');
@@ -17,32 +8,35 @@ async function seedDatabase() {
         ssl: false, // Disable SSL for Coolify PostgreSQL
     });
 
-    const db = drizzle(pool);
+    const client = await pool.connect();
 
     try {
         // Check if data already exists
-        const existingUsers = await db.select().from(users).limit(1);
-        if (existingUsers.length > 0) {
+        const existingUsers = await client.query('SELECT id FROM users LIMIT 1');
+        if (existingUsers.rows.length > 0) {
             console.log('📋 Database already seeded, skipping...');
             return;
         }
 
         // Create departments
         console.log('🏢 Creating departments...');
-        const [itDept] = await db.insert(departments).values({
-            name: 'Information Technology',
-            code: 'IT',
-        }).returning();
+        const itDeptResult = await client.query(
+            'INSERT INTO departments (name, code, created_at, updated_at) VALUES ($1, $2, $3, $4) RETURNING id',
+            ['Information Technology', 'IT', new Date().toISOString(), new Date().toISOString()]
+        );
+        const itDept = itDeptResult.rows[0];
 
-        const [hrDept] = await db.insert(departments).values({
-            name: 'Human Resources',
-            code: 'HR',
-        }).returning();
+        const hrDeptResult = await client.query(
+            'INSERT INTO departments (name, code, created_at, updated_at) VALUES ($1, $2, $3, $4) RETURNING id',
+            ['Human Resources', 'HR', new Date().toISOString(), new Date().toISOString()]
+        );
+        const hrDept = hrDeptResult.rows[0];
 
-        const [financeDept] = await db.insert(departments).values({
-            name: 'Finance',
-            code: 'FIN',
-        }).returning();
+        const financeDeptResult = await client.query(
+            'INSERT INTO departments (name, code, created_at, updated_at) VALUES ($1, $2, $3, $4) RETURNING id',
+            ['Finance', 'FIN', new Date().toISOString(), new Date().toISOString()]
+        );
+        const financeDept = financeDeptResult.rows[0];
 
         // Create categories
         console.log('📂 Creating categories...');

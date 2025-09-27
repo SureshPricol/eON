@@ -18,13 +18,29 @@ async function runSimpleMigrations() {
         ssl: false, // Disable SSL for Coolify PostgreSQL
     });
 
+    const client = await pool.connect();
+
     try {
+        // Check if tables already exist
+        const tableCheck = await client.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name IN ('users', 'departments', 'categories', 'roles', 'permissions', 'eons')
+        `);
+
+        if (tableCheck.rows.length > 0) {
+            console.log('📋 Database tables already exist, skipping migration...');
+            console.log(`Found tables: ${tableCheck.rows.map(r => r.table_name).join(', ')}`);
+            return;
+        }
+
         // Read the SQL migration file
         const migrationPath = path.join(__dirname, '../lib/db/migrations/0000_initial.sql');
         const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
         // Execute the migration
-        await pool.query(migrationSQL);
+        await client.query(migrationSQL);
 
         console.log('✅ Database migrations completed successfully!');
     } catch (error) {
@@ -47,6 +63,7 @@ async function runSimpleMigrations() {
 
         process.exit(1);
     } finally {
+        client.release();
         await pool.end();
     }
 }
