@@ -184,7 +184,7 @@ export function Sidebar() {
             collapsed ? "px-2" : "px-3",
           )}
           size="sm"
-          onClick={logout}
+          onClick={() => logout()}
           title={collapsed ? "Logout" : undefined}
         >
           <LogOut className={cn("w-4 h-4", !collapsed && "mr-2")} />

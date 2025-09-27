@@ -639,6 +639,15 @@ if (typeof window === 'undefined') {
       return response.json();
     },
 
+    logAction: async (action: string, userId: string, entityId?: string, details?: any) => {
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, userId, entityId, details })
+      });
+      return response.json();
+    },
+
     initializeDefaultData: async () => {
       // No-op on client side
     }

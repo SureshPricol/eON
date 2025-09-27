@@ -7,9 +7,9 @@ import { type User, type Role, storage } from "./storage"
 interface AuthContextType {
   user: User | null
   login: (email: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   isLoading: boolean
-  hasPermission: (permission: string) => boolean
+  hasPermission: (permission: string) => Promise<boolean>
   isAdmin: () => boolean
 }
 
